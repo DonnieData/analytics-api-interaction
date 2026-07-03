@@ -43,7 +43,13 @@ with psycopg2.connect(db_conn_str, connect_timeout=5) as conn:
         
 
 # %%
+with psycopg2.connect(db_conn_str, connect_timeout=5) as conn:
+    with conn.cursor() as cur:
+        cur.execute("SELECT * FROM test_analytics.tabla_prueba;")
+        
+        # This assigns the list of tuples to your variable
+        my_data = cur.fetchall()
 
-
-
+# You can now use the 'my_data' variable outside the database connection block
+print(my_data)
 # %%
