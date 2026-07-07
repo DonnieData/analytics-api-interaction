@@ -25,8 +25,9 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 # %%
 
+#model/mapping of farmers market table within the ddatabase 
 class FarmersMarket(db.Model):
-    #assign class attributes 
+    #assign class attributes/ table metadata 
     __tablename__ = 'NY_Farmers_Markets'
     __table_args__ = {'schema': 'public'}
 
@@ -87,3 +88,24 @@ class FarmersMarket(db.Model):
             }
 
 # %%
+
+#---api endpoints 
+# proof of concept endpoint
+#deccorator,root, version, resource, action/identifier
+@app.route("/api/v1/markets/test-ten", methods=["GET"])
+def get_test_data():
+    """endpoint returning first 10 rows"""
+
+    try:
+        markets = db.session.query(FarmersMarket).limit(10).all()
+
+        markets_json = [market.to_dict() for market in markets]
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
+# %%
+if __name__ == "__main__":
+    app.run(debug=True, port=5000)
