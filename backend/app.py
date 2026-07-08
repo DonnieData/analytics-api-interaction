@@ -8,12 +8,16 @@ from dotenv import load_dotenv
 #%%
 load_dotenv()
 
+
 #%%
 #configure core application 
 app = Flask(__name__)
 db_url = os.getenv("DATABASE_URL")
 if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
+
+#%%
+print(db_url)
 
 # %%
 #pass database cconnecction 
@@ -77,8 +81,8 @@ class FarmersMarket(db.Model):
             "operation_hours": self.operation_hours ,
             "operation_season": self.operation_season ,
             "operating_months": self.operating_months ,
-            "fmnp_accepted": self.fmnp_accepted ,
-            "snap_accepted": self.snap_accepted  ,
+            "fmnp_accepted": self.fmnp ,
+            "snap_accepted": self.snap  ,
             "fcc_issued": self.fcc_issued ,
             "fcc_accepted": self.fcc_accepted ,
             "wic_vf": self.wic_vf ,
@@ -109,3 +113,4 @@ def get_test_data():
 # %%
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
+# %%
