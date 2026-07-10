@@ -17,7 +17,6 @@ if db_url and db_url.startswith("postgres://"):
     db_url = db_url.replace("postgres://", "postgresql://", 1)
 
 #%%
-print(db_url)
 
 # %%
 #pass database cconnecction 
@@ -101,9 +100,11 @@ def get_test_data():
     """endpoint returning first 10 rows"""
 
     try:
-        markets = db.session.query(FarmersMarket).limit(10).all()
+        market_data = db.session.query(FarmersMarket).limit(10).all()
+        
+        market_json = [i.to_dict() for i in market_data]
 
-        markets_json = [market.to_dict() for market in markets]
+        return market_json
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
