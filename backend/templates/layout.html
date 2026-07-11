@@ -27,7 +27,8 @@
                 <span id="status-badge" class="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Status: Ready</span>
             </div>
             
-            <pre id="json-display" class="p-6 text-sm text-slate-300 font-mono overflow-x-auto min-h-[300px] whitespace-pre-wrap select-all">// Data will load here automatically...</pre>
+        
+            <pre id="json-display" class="p-6 text-xs text-slate-450 font-mono overflow-y-auto max-h-[380px] whitespace-pre-wrap select-all flex-1">// Workspace Idle. Click 'Refresh Data Blocks' to query the live API endpoint.</pre>
         </main>
     </div>
 
@@ -74,7 +75,7 @@
         }
 
         // Fire request on load instantly when DOM mounts
-        window.addEventListener('DOMContentLoaded', fetchMarkets);
+       
     </script>
 </body>
 </html>

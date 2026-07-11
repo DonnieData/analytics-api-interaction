@@ -4,6 +4,7 @@ from flask import Flask, jsonify, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from dotenv import load_dotenv
+import pandas as pd
 
 #%%
 load_dotenv()
@@ -101,19 +102,23 @@ def get_test_data():
 
     try:
         market_data = db.session.query(FarmersMarket).limit(10).all()
+        market_raw = [i.to_dict() for i in market_data]
+        df = pd.DataFrame(market_raw)
+        df = df.fillna("")
         
-        market_json = [i.to_dict() for i in market_data]
-
-        return market_json
+        #format needed to convert properly and dispaly on front end 
+        #formats it exactly how forntend javasccript and plotly needs
+        market_json = df.to_dict(orient="records")
+        return jsonify(market_json)
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-
+#route to display front end which will serve ui to interact with other api endpoints
 @app.route("/layout", methods=["GET"])
 def app_layout():
     """Serves the interactive frontend"""
-    return render_template("layout.html")
+    return render_template("layout2.html")
 # %%
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
