@@ -1,6 +1,6 @@
 #%%
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from dotenv import load_dotenv
@@ -110,7 +110,10 @@ def get_test_data():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 
-
+@app.route("/layout", methods=["GET"])
+def app_layout():
+    """Serves the interactive frontend"""
+    return render_template("layout.html")
 # %%
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
