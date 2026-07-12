@@ -124,6 +124,19 @@ def get_county_summary_sql():
             func.count(FarmersMarket.id).label('market_count')
             ).group_by(FarmersMarket.county).order_by(func.count(
             FarmersMarket.id).desc()).all()
+        
+        #format tuples 
+        records = []
+        for county, count in summary_data:
+            # Handle null values defensively and standardize casing
+            clean_county = county.strip().upper() if county else "UNKNOWN"
+            
+            records.append({
+                "county": clean_county,
+                "market_count": count
+            })
+
+        return jsonify(records)
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
