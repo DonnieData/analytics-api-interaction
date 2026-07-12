@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API interactions</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
 
@@ -44,105 +45,155 @@
             </div>
         </main>
 
-        <section data-url="/api/v1/markets/summary-by-county" id="container-summary" class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden dynamic-container">
-            <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
-                <span>GET /api/v1/markets/summary-by-county</span>
-                <div class="flex items-center gap-3">
-                    <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded">Status: Idle</span>
-                    <button onclick="updateTableComponent(document.getElementById('container-summary'))" class="text-blue-400 hover:text-blue-300 font-semibold px-2 py-0.5 border border-slate-800 rounded bg-slate-900/80 transition-all active:scale-95">
-                        Refresh Summary
-                    </button>
+        <section data-url="/api/v1/markets/summary-by-county" id="container-summary" class="space-y-6 dynamic-container">
+            
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
+                    <span>VISUALIZATION (Top 15 Counties)</span>
+                    <div class="flex items-center gap-3">
+                        <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded">Status: Idle</span>
+                        <button onclick="updateTableComponent(document.getElementById('container-summary'))" class="text-blue-400 hover:text-blue-300 font-semibold px-2 py-0.5 border border-slate-800 rounded bg-slate-900/80 transition-all active:scale-95">
+                            Refresh Summary Analytics
+                        </button>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div id="plotly-chart" class="w-full min-h-[350px]"></div>
                 </div>
             </div>
-            <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
-                <table class="data-table w-full text-left border-collapse text-xs hidden">
-                    <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
-                    <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
-                </table>
-                <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
-                    Workspace Idle. Click 'Refresh Workspace Data' or 'Refresh Summary' to compile database metrics.
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
+                    <span>DATA MATRIX (Full Records Summary)</span>
+                </div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
+                    <table class="data-table w-full text-left border-collapse text-xs hidden">
+                        <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
+                        <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
+                    </table>
+                    <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
+                        Workspace Idle. Click 'Refresh Workspace Data' or 'Refresh Summary Analytics' to compile database metrics.
+                    </div>
                 </div>
             </div>
+
         </section>
     </div>
 
     <script>
-        // High-level abstraction that updates any component matching our markup rules
+        function renderPlotlyChart(records) {
+            const chartDiv = document.getElementById('plotly-chart');
+            if (!records || records.length === 0) {
+                chartDiv.innerHTML = `<div class="text-center text-amber-500 font-mono p-12">// No metrics found to plot.</div>`;
+                return;
+            }
+
+            // Slicing data cleanly to the top 15 rows
+            const topFifteenRecords = records.slice(0, 15);
+            const counties = topFifteenRecords.map(r => r.county || r.County || 'Unknown');
+            const marketCounts = topFifteenRecords.map(r => r.market_count || r.Market_Count || r.count || 0);
+
+            // Plain, fundamental data structure passed straight to Plotly
+            const data = [{
+                x: counties,
+                y: marketCounts,
+                type: 'bar'
+            }];
+
+            chartDiv.innerHTML = '';
+            
+            // Absolutely zero bells and whistles - let standard Plotly defaults size it cleanly
+            Plotly.newPlot('plotly-chart', data);
+        }
+
         async function updateTableComponent(container) {
             const url = container.getAttribute('data-url');
             const badge = container.querySelector('.status-badge');
+            
             const placeholder = container.querySelector('.table-placeholder');
             const table = container.querySelector('.data-table');
             const thead = container.querySelector('.table-head');
             const tbody = container.querySelector('.table-body');
 
-            // 1. Establish loading display settings
-            table.classList.add('hidden');
-            placeholder.classList.remove('hidden');
-            placeholder.className = "table-placeholder p-12 text-center text-slate-500 font-mono animate-pulse";
-            placeholder.innerHTML = `// Running data pipeline stream for target route...`;
+            if (badge) {
+                badge.textContent = "Fetching...";
+                badge.className = "status-badge text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded";
+            }
             
-            badge.textContent = "Fetching...";
-            badge.className = "status-badge text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded";
+            if (placeholder && table) {
+                table.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                placeholder.className = "table-placeholder p-12 text-center text-slate-500 font-mono animate-pulse";
+                placeholder.innerHTML = `// Running data pipeline stream for target route...`;
+            }
 
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const records = await response.json();
 
-                thead.innerHTML = '';
-                tbody.innerHTML = '';
+                if (thead && tbody && placeholder && table) {
+                    thead.innerHTML = '';
+                    tbody.innerHTML = '';
 
-                if (!records || records.length === 0) {
-                    placeholder.className = "table-placeholder p-12 text-center text-amber-400 font-mono";
-                    placeholder.innerHTML = "// Target data returned completely empty.";
-                    return;
+                    if (!records || records.length === 0) {
+                        placeholder.className = "table-placeholder p-12 text-center text-amber-400 font-mono";
+                        placeholder.innerHTML = "// Target data returned completely empty.";
+                        return;
+                    }
+
+                    const cols = Object.keys(records[0]);
+                    const trHead = document.createElement('tr');
+                    cols.forEach(c => {
+                        const th = document.createElement('th');
+                        th.className = "p-4 font-bold border-b border-slate-800";
+                        th.textContent = c.replace(/_/g, ' ');
+                        trHead.appendChild(th);
+                    });
+                    thead.appendChild(trHead);
+
+                    records.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-900/40 transition-colors whitespace-nowrap";
+                        cols.forEach(c => {
+                            const td = document.createElement('td');
+                            td.className = "p-4 border-b border-slate-900 max-w-[300px] truncate";
+                            td.textContent = (row[c] !== null && row[c] !== undefined) ? row[c] : '—';
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+
+                    placeholder.classList.add('hidden');
+                    table.classList.remove('hidden');
                 }
 
-                // 2. Generate schema headers dynamically
-                const cols = Object.keys(records[0]);
-                const trHead = document.createElement('tr');
-                cols.forEach(c => {
-                    const th = document.createElement('th');
-                    th.className = "p-4 font-bold border-b border-slate-800";
-                    th.textContent = c.replace(/_/g, ' ');
-                    trHead.appendChild(th);
-                });
-                thead.appendChild(trHead);
+                if (container.id === 'container-summary') {
+                    renderPlotlyChart(records);
+                }
 
-                // 3. Populate dynamic cell rows
-                records.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-900/40 transition-colors whitespace-nowrap";
-                    cols.forEach(c => {
-                        const td = document.createElement('td');
-                        td.className = "p-4 border-b border-slate-900 max-w-[300px] truncate";
-                        td.textContent = (row[c] !== null && row[c] !== undefined) ? row[c] : '—';
-                        tr.appendChild(td);
-                    });
-                    tbody.appendChild(tr);
-                });
-
-                placeholder.classList.add('hidden');
-                table.classList.remove('hidden');
-                badge.textContent = "Status: 200 OK";
-                badge.className = "status-badge text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded";
+                if (badge) {
+                    badge.textContent = "Status: 200 OK";
+                    badge.className = "status-badge text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded";
+                }
 
             } catch (err) {
-                placeholder.className = "table-placeholder p-12 text-center text-rose-400 font-mono";
-                placeholder.innerHTML = `// Stream failure: ${err.message}`;
-                badge.textContent = "Status: Error";
-                badge.className = "status-badge text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded";
+                if (placeholder) {
+                    placeholder.className = "table-placeholder p-12 text-center text-rose-400 font-mono";
+                    placeholder.innerHTML = `// Stream failure: ${err.message}`;
+                }
+                if (badge) {
+                    badge.textContent = "Status: Error";
+                    badge.className = "status-badge text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded";
+                }
             }
         }
 
-        // Parent initialization orchestrator
         async function refreshWorkspaceData() {
             const btn = document.getElementById('refresh-btn');
             btn.disabled = true;
             btn.innerText = "Processing Engines...";
 
-            // Select all layout wrappers matching class rule and map them to asynchronous promises
             const containers = document.querySelectorAll('.dynamic-container');
             await Promise.all(Array.from(containers).map(c => updateTableComponent(c)));
 
