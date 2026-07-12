@@ -5,7 +5,8 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from dotenv import load_dotenv
 import pandas as pd
-
+from datetime import datetime 
+from zoneinfo import ZoneInfo
 #%%
 load_dotenv()
 
@@ -105,7 +106,7 @@ def get_test_data():
         market_raw = [i.to_dict() for i in market_data]
         df = pd.DataFrame(market_raw)
         df = df.fillna("")
-        
+
         #format needed to convert properly and dispaly on front end 
         #formats it exactly how forntend javasccript and plotly needs
         market_json = df.to_dict(orient="records")
@@ -118,7 +119,12 @@ def get_test_data():
 @app.route("/layout", methods=["GET"])
 def app_layout():
     """Serves the interactive frontend"""
-    return render_template("layout2.html")
+
+    # get and serve eastern time 
+    eastern_tz = ZoneInfo("America/New_York")
+    now_eastern = datetime.now(eastern_tz)
+    formatted_time = now_eastern.strftime("%B %d, %Y — %I:%M %p %Z")
+    return render_template("layout2.html", current_time=formatted_time)
 # %%
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
