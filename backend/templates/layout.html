@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API interactions</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
+
+    <div class="max-w-5xl mx-auto px-4 py-10">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-extrabold tracking-tight text-white">API interactions</h1>
+                <p class="text-slate-400 mt-1">Live data feed from Neon Serverless PostgreSQL instance.</p>
+            </div>
+            
+            <button id="refresh-btn" onclick="fetchMarkets()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 disabled:opacity-50">
+                <span id="btn-icon"></span>
+                <span id="btn-text">Refresh Data</span>
+            </button>
+        </header>
+
+        <main class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
+                <span>GET /api/v1/markets/test-ten</span>
+                <span id="status-badge" class="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Status: Ready</span>
+            </div>
+            
+        
+            <pre id="json-display" class="p-6 text-xs text-slate-450 font-mono overflow-y-auto max-h-[380px] whitespace-pre-wrap select-all flex-1">// Workspace Idle. Click 'Refresh Data Blocks' to query the live API endpoint.</pre>
+        </main>
+    </div>
+
+    <script>
+        async function fetchMarkets() {
+            const display = document.getElementById('json-display');
+            const btnText = document.getElementById('btn-text');
+            const btnIcon = document.getElementById('btn-icon');
+            const btn = document.getElementById('refresh-btn');
+            const statusBadge = document.getElementById('status-badge');
+
+            // 1. Enter Loading State
+            display.textContent = "// Querying API routing endpoints and waking Neon connection pool...";
+            display.classList.add('text-slate-500');
+            statusBadge.textContent = "Status: Fetching...";
+            statusBadge.className = "text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded";
+            btnText.textContent = "Fetching...";
+            btn.disabled = true;
+
+            try {
+                // 2. Fetch data directly from your backend route
+                const response = await fetch('/api/v1/markets/test-ten');
+                
+                if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
+                
+                const data = await response.json();
+
+                // 3. Render Formatted Output Data on Success
+                display.classList.remove('text-slate-500');
+                display.textContent = JSON.stringify(data, null, 4);
+                statusBadge.textContent = "Status: 200 OK";
+                statusBadge.className = "text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded";
+            } catch (error) {
+                // 4. Handle Operational Failures Gracefully
+                display.classList.add('text-rose-400');
+                display.textContent = `// Operational Failure Encountered:\\n// ${error.message}\\n\\n// The database connection likely timed out. Click 'Refresh Data' to re-ping the pool.`;
+                statusBadge.textContent = "Status: Error";
+                statusBadge.className = "text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded";
+            } finally {
+                // 5. Reset UI Elements
+                btnText.textContent = "Refresh Data";
+                btn.disabled = false;
+            }
+        }
+
+        // Fire request on load instantly when DOM mounts
+       
+    </script>
+</body>
+</html>

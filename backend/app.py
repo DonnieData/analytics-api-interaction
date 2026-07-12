@@ -1,10 +1,12 @@
 #%%
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import func
 from dotenv import load_dotenv
-
+import pandas as pd
+from datetime import datetime 
+from zoneinfo import ZoneInfo
 #%%
 load_dotenv()
 
@@ -101,16 +103,28 @@ def get_test_data():
 
     try:
         market_data = db.session.query(FarmersMarket).limit(10).all()
-        
-        market_json = [i.to_dict() for i in market_data]
+        market_raw = [i.to_dict() for i in market_data]
+        df = pd.DataFrame(market_raw)
+        df = df.fillna("")
 
-        return market_json
+        #format needed to convert properly and dispaly on front end 
+        #formats it exactly how forntend javasccript and plotly needs
+        market_json = df.to_dict(orient="records")
+        return jsonify(market_json)
 
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+#route to display front end which will serve ui to interact with other api endpoints
+@app.route("/layout", methods=["GET"])
+def app_layout():
+    """Serves the interactive frontend"""
 
-
+    # get and serve eastern time 
+    eastern_tz = ZoneInfo("America/New_York")
+    now_eastern = datetime.now(eastern_tz)
+    formatted_time = now_eastern.strftime("%B %d, %Y — %I:%M %p %Z")
+    return render_template("layout2.html", current_time=formatted_time)
 # %%
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
