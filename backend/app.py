@@ -115,6 +115,22 @@ def get_test_data():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+
+@app.route("/api/v1/markets/summary-by-county", methods=["GET"])
+def get_county_summary_sql():
+    try:
+
+        summary_data = db.session.query(FarmersMarket.county,
+            func.count(FarmersMarket.id).label('market_count')
+            ).group_by(FarmersMarket.county).order_by(func.count(
+            FarmersMarket.id).desc()).all()
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+
+
+
 #route to display front end which will serve ui to interact with other api endpoints
 @app.route("/layout", methods=["GET"])
 def app_layout():
