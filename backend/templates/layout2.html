@@ -24,38 +24,52 @@
             </button>
         </header>
 
-        <main data-url="/api/v1/markets/test-ten" id="container-raw" class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden dynamic-container">
-            <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
-                <span>GET /api/v1/markets/test-ten</span>
-                <div class="flex items-center gap-3">
-                    <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded">Status: Idle</span>
-                    <button onclick="updateTableComponent(document.getElementById('container-raw'))" class="text-blue-400 hover:text-blue-300 font-semibold px-2 py-0.5 border border-slate-800 rounded bg-slate-900/80 transition-all active:scale-95">
+        <main data-url="/api/v1/markets/test-ten" id="container-raw" class="space-y-6 dynamic-container">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Raw Data Preview</h2>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">GET /api/v1/markets/test-ten</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
+                    <button onclick="updateTableComponent(document.getElementById('container-raw'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
                         Refresh Raw
                     </button>
                 </div>
             </div>
-            <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
-                <table class="data-table w-full text-left border-collapse text-xs hidden">
-                    <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
-                    <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
-                </table>
-                <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
-                    Workspace Idle. Click 'Refresh Workspace Data' or 'Refresh Raw' to run pipeline query.
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
+                    <table class="data-table w-full text-left border-collapse text-xs hidden">
+                        <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
+                        <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
+                    </table>
+                    <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
+                        Workspace Idle. Click 'Refresh Workspace Data' or 'Refresh Raw' to run pipeline query.
+                    </div>
                 </div>
             </div>
         </main>
 
         <section data-url="/api/v1/markets/summary-by-county" id="container-summary" class="space-y-6 dynamic-container">
             
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Summary Analytics</h2>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">Metrics compiled by target county distribution layer</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
+                    <button onclick="updateTableComponent(document.getElementById('container-summary'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
+                        Refresh Summary Analytics
+                    </button>
+                </div>
+            </div>
+
             <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
                 <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
                     <span>VISUALIZATION (Top 15 Counties)</span>
-                    <div class="flex items-center gap-3">
-                        <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded">Status: Idle</span>
-                        <button onclick="updateTableComponent(document.getElementById('container-summary'))" class="text-blue-400 hover:text-blue-300 font-semibold px-2 py-0.5 border border-slate-800 rounded bg-slate-900/80 transition-all active:scale-95">
-                            Refresh Summary Analytics
-                        </button>
-                    </div>
                 </div>
                 <div class="p-6">
                     <div id="plotly-chart" class="w-full min-h-[350px]"></div>
@@ -81,6 +95,7 @@
     </div>
 
     <script>
+        // CHART PLOTTING ENGINE (Completely untouched to preserve working state)
         function renderPlotlyChart(records) {
             const chartDiv = document.getElementById('plotly-chart');
             if (!records || records.length === 0) {
@@ -88,12 +103,10 @@
                 return;
             }
 
-            // Slicing data cleanly to the top 15 rows
             const topFifteenRecords = records.slice(0, 15);
             const counties = topFifteenRecords.map(r => r.county || r.County || 'Unknown');
             const marketCounts = topFifteenRecords.map(r => r.market_count || r.Market_Count || r.count || 0);
 
-            // Plain, fundamental data structure passed straight to Plotly
             const data = [{
                 x: counties,
                 y: marketCounts,
@@ -101,8 +114,6 @@
             }];
 
             chartDiv.innerHTML = '';
-            
-            // Absolutely zero bells and whistles - let standard Plotly defaults size it cleanly
             Plotly.newPlot('plotly-chart', data);
         }
 
@@ -117,7 +128,7 @@
 
             if (badge) {
                 badge.textContent = "Fetching...";
-                badge.className = "status-badge text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded";
+                badge.className = "status-badge text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded text-xs font-mono";
             }
             
             if (placeholder && table) {
@@ -174,7 +185,7 @@
 
                 if (badge) {
                     badge.textContent = "Status: 200 OK";
-                    badge.className = "status-badge text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded";
+                    badge.className = "status-badge text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded text-xs font-mono";
                 }
 
             } catch (err) {
@@ -184,7 +195,7 @@
                 }
                 if (badge) {
                     badge.textContent = "Status: Error";
-                    badge.className = "status-badge text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded";
+                    badge.className = "status-badge text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded text-xs font-mono";
                 }
             }
         }
