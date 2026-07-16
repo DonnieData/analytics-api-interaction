@@ -5,139 +5,211 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API interactions</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
 
-    <div class="max-w-5xl mx-auto px-4 py-10">
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 mb-8 gap-4">
+    <div class="max-w-5xl mx-auto px-4 py-10 space-y-10">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold tracking-tight text-white">API interactions</h1>
                 <p class="text-slate-400 mt-1">Live data feed from Neon Serverless PostgreSQL instance.</p>
-
                 <div class="mt-2 flex items-center gap-2 text-xs font-mono text-slate-500">
                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>System Initialization: <span class="text-blue-400">{{ current_time }}</span></span>
                 </div>
             </div>
-            
-            <button id="refresh-btn" onclick="fetchMarkets()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 disabled:opacity-50">
-                <span id="btn-icon"></span>
-                <span id="btn-text">Refresh Data</span>
+            <button id="refresh-btn" onclick="refreshWorkspaceData()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 disabled:opacity-50">
+                <span id="btn-text">Refresh Workspace Data</span>
             </button>
         </header>
 
-        <main class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
-                <span>GET /api/v1/markets/test-ten</span>
-                <span id="status-badge" class="text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded">Status: Idle</span>
-            </div>
+        <main data-url="/api/v1/markets/test-ten" id="container-raw" class="space-y-6 dynamic-container">
             
-            <div class="overflow-x-auto overflow-y-auto max-h-[450px] flex-1">
-                <table id="dynamic-table" class="w-full text-left border-collapse text-xs hidden">
-                    <thead id="table-head" class="bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap">
-                        </thead>
-                    <tbody id="table-body" class="divide-y divide-slate-800/50 text-slate-300">
-                        </tbody>
-                </table>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Raw Data Preview</h2>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">GET /api/v1/markets/test-ten</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
+                    <button onclick="updateTableComponent(document.getElementById('container-raw'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
+                        Refresh Raw
+                    </button>
+                </div>
+            </div>
 
-                <div id="table-placeholder" class="p-12 text-center text-slate-500 italic font-mono">
-                    Workspace Idle. Click 'Refresh Data' to query the live API endpoint.
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
+                    <table class="data-table w-full text-left border-collapse text-xs hidden">
+                        <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
+                        <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
+                    </table>
+                    <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
+                        Workspace Idle. Click 'Refresh Workspace Data' or 'Refresh Raw' to run pipeline query.
+                    </div>
                 </div>
             </div>
         </main>
+
+        <section data-url="/api/v1/markets/summary-by-county" id="container-summary" class="space-y-6 dynamic-container">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Summary Analytics</h2>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">Metrics compiled by target county distribution layer</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
+                    <button onclick="updateTableComponent(document.getElementById('container-summary'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
+                        Refresh Summary Analytics
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
+                    <span>VISUALIZATION (Top 15 Counties)</span>
+                </div>
+                <div class="p-6">
+                    <div id="plotly-chart" class="w-full min-h-[350px]"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
+                    <span>DATA MATRIX (Full Records Summary)</span>
+                </div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
+                    <table class="data-table w-full text-left border-collapse text-xs hidden">
+                        <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
+                        <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
+                    </table>
+                    <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
+                        Workspace Idle. Click 'Refresh Workspace Data' or 'Refresh Summary Analytics' to compile database metrics.
+                    </div>
+                </div>
+            </div>
+
+        </section>
     </div>
 
     <script>
-        async function fetchMarkets() {
-            const table = document.getElementById('dynamic-table');
-            const tableHead = document.getElementById('table-head');
-            const tableBody = document.getElementById('table-body');
-            const placeholder = document.getElementById('table-placeholder');
-            const btnText = document.getElementById('btn-text');
-            const btn = document.getElementById('refresh-btn');
-            const statusBadge = document.getElementById('status-badge');
+        // CHART PLOTTING ENGINE (Completely untouched to preserve working state)
+        function renderPlotlyChart(records) {
+            const chartDiv = document.getElementById('plotly-chart');
+            if (!records || records.length === 0) {
+                chartDiv.innerHTML = `<div class="text-center text-amber-500 font-mono p-12">// No metrics found to plot.</div>`;
+                return;
+            }
 
-            // 1. Set Loading UI State
-            table.classList.add('hidden');
-            placeholder.classList.remove('hidden');
-            placeholder.className = "p-12 text-center text-slate-500 font-mono animate-pulse";
-            placeholder.innerHTML = "// Parsing structural array parameters and schema matrices...";
+            const topFifteenRecords = records.slice(0, 15);
+            const counties = topFifteenRecords.map(r => r.county || r.County || 'Unknown');
+            const marketCounts = topFifteenRecords.map(r => r.market_count || r.Market_Count || r.count || 0);
+
+            const data = [{
+                x: counties,
+                y: marketCounts,
+                type: 'bar'
+            }];
+
+            chartDiv.innerHTML = '';
+            Plotly.newPlot('plotly-chart', data);
+        }
+
+        async function updateTableComponent(container) {
+            const url = container.getAttribute('data-url');
+            const badge = container.querySelector('.status-badge');
             
-            statusBadge.textContent = "Status: Fetching...";
-            statusBadge.className = "text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded";
-            btnText.textContent = "Fetching...";
-            btn.disabled = true;
+            const placeholder = container.querySelector('.table-placeholder');
+            const table = container.querySelector('.data-table');
+            const thead = container.querySelector('.table-head');
+            const tbody = container.querySelector('.table-body');
 
-            try {
-                // 2. Fetch records array from Flask
-                const response = await fetch('/api/v1/markets/test-ten');
-                if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
-                
-                const records = await response.json();
-
-                // Clear previous structures entirely
-                tableHead.innerHTML = '';
-                tableBody.innerHTML = '';
-
-                // Handle empty DataFrame edge case smoothly
-                if (!records || records.length === 0) {
-                    placeholder.classList.remove('hidden');
-                    placeholder.className = "p-12 text-center text-amber-400 font-mono";
-                    placeholder.innerHTML = "// Target DataFrame is clean but completely empty.";
-                    return;
-                }
-
-                // 3. DYNAMICALLY BUILD HEADERS (Extract explicit key attributes)
-                const columns = Object.keys(records[0]);
-                const headerTr = document.createElement('tr');
-                
-                columns.forEach(colName => {
-                    const th = document.createElement('th');
-                    th.className = "p-4 font-bold border-b border-slate-800";
-                    // Replaces underscores with spaces for a professional UI look
-                    th.textContent = colName.replace(/_/g, ' '); 
-                    headerTr.appendChild(th);
-                });
-                tableHead.appendChild(headerTr);
-
-                // 4. DYNAMICALLY BUILD ROWS AND CELLS
-                records.forEach(row => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-slate-900/40 transition-colors whitespace-nowrap";
-                    
-                    columns.forEach(colName => {
-                        const td = document.createElement('td');
-                        td.className = "p-4 border-b border-slate-900 max-w-[300px] truncate";
-                        
-                        // Handle null/missing data states explicitly
-                        const value = row[colName];
-                        td.textContent = (value !== null && value !== undefined) ? value : '—';
-                        
-                        tr.appendChild(td);
-                    });
-                    tableBody.appendChild(tr);
-                });
-
-                // 5. Swap visibility states from placeholder text to dynamic grid
-                placeholder.classList.add('hidden');
-                table.classList.remove('hidden');
-                
-                statusBadge.textContent = "Status: 200 OK";
-                statusBadge.className = "text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded";
-
-            } catch (error) {
-                // 6. Exception Fallback Display
+            if (badge) {
+                badge.textContent = "Fetching...";
+                badge.className = "status-badge text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded text-xs font-mono";
+            }
+            
+            if (placeholder && table) {
                 table.classList.add('hidden');
                 placeholder.classList.remove('hidden');
-                placeholder.className = "p-12 text-center text-rose-400 font-mono whitespace-pre-wrap";
-                placeholder.innerHTML = `// Execution Failure:\n// ${error.message}\n\nPlease click 'Refresh Data' to re-execute.`;
-                
-                statusBadge.textContent = "Status: Error";
-                statusBadge.className = "text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded";
-            } finally {
-                btnText.textContent = "Refresh Data";
-                btn.disabled = false;
+                placeholder.className = "table-placeholder p-12 text-center text-slate-500 font-mono animate-pulse";
+                placeholder.innerHTML = `// Running data pipeline stream for target route...`;
             }
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const records = await response.json();
+
+                if (thead && tbody && placeholder && table) {
+                    thead.innerHTML = '';
+                    tbody.innerHTML = '';
+
+                    if (!records || records.length === 0) {
+                        placeholder.className = "table-placeholder p-12 text-center text-amber-400 font-mono";
+                        placeholder.innerHTML = "// Target data returned completely empty.";
+                        return;
+                    }
+
+                    const cols = Object.keys(records[0]);
+                    const trHead = document.createElement('tr');
+                    cols.forEach(c => {
+                        const th = document.createElement('th');
+                        th.className = "p-4 font-bold border-b border-slate-800";
+                        th.textContent = c.replace(/_/g, ' ');
+                        trHead.appendChild(th);
+                    });
+                    thead.appendChild(trHead);
+
+                    records.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-900/40 transition-colors whitespace-nowrap";
+                        cols.forEach(c => {
+                            const td = document.createElement('td');
+                            td.className = "p-4 border-b border-slate-900 max-w-[300px] truncate";
+                            td.textContent = (row[c] !== null && row[c] !== undefined) ? row[c] : '—';
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+
+                    placeholder.classList.add('hidden');
+                    table.classList.remove('hidden');
+                }
+
+                if (container.id === 'container-summary') {
+                    renderPlotlyChart(records);
+                }
+
+                if (badge) {
+                    badge.textContent = "Status: 200 OK";
+                    badge.className = "status-badge text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded text-xs font-mono";
+                }
+
+            } catch (err) {
+                if (placeholder) {
+                    placeholder.className = "table-placeholder p-12 text-center text-rose-400 font-mono";
+                    placeholder.innerHTML = `// Stream failure: ${err.message}`;
+                }
+                if (badge) {
+                    badge.textContent = "Status: Error";
+                    badge.className = "status-badge text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded text-xs font-mono";
+                }
+            }
+        }
+
+        async function refreshWorkspaceData() {
+            const btn = document.getElementById('refresh-btn');
+            btn.disabled = true;
+            btn.innerText = "Processing Engines...";
+
+            const containers = document.querySelectorAll('.dynamic-container');
+            await Promise.all(Array.from(containers).map(c => updateTableComponent(c)));
+
+            btn.disabled = false;
+            btn.innerText = "Refresh Workspace Data";
         }
     </script>
 </body>
