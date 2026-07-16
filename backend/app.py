@@ -141,8 +141,30 @@ def get_county_summary_sql():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route("/api/v1/markets/market/market-geo-plot", methods=["GET"])
+def get_geo_scatter():
+    try:
+        results = db.session.queery(
+            FarmersMarket.market_name,
+            FarmersMarket.operation_hours,
+            FarmersMarket.latitude,
+            FarmersMarket.longitude
+            ).filter(FarmersMarket.latitude.isnot(None), FarmersMarket.longitude.isnot(None)).all()
+
+        payload = [
+            {
+                "name": i.market_name,
+                "hours": i.operation_hours if i.operation_hours else "Hours not listed",
+                "lat": float(i.latitude),
+                "lon": float(i.longitude)
+            }
+            for i in results
+            ]
+        return jsonify(payload)
 
 
+#---------------------------------------------------
+#Layout / UI ENTRY ROUTE 
 
 #route to display front end which will serve ui to interact with other api endpoints
 @app.route("/layout", methods=["GET"])
