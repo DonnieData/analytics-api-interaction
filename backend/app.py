@@ -141,10 +141,10 @@ def get_county_summary_sql():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
-@app.route("/api/v1/markets/market/market-geo-plot", methods=["GET"])
+@app.route("/api/v1/markets/market-geo-plot", methods=["GET"])
 def get_geo_scatter():
     try:
-        results = db.session.queery(
+        results = db.session.query(
             FarmersMarket.market_name,
             FarmersMarket.operation_hours,
             FarmersMarket.latitude,
@@ -160,7 +160,11 @@ def get_geo_scatter():
             }
             for i in results
             ]
+        
         return jsonify(payload)
+    
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
 #---------------------------------------------------
@@ -175,7 +179,7 @@ def app_layout():
     eastern_tz = ZoneInfo("America/New_York")
     now_eastern = datetime.now(eastern_tz)
     formatted_time = now_eastern.strftime("%B %d, %Y — %I:%M %p %Z")
-    return render_template("layout2.html", current_time=formatted_time)
+    return render_template("layout.html", current_time=formatted_time)
 # %%
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
