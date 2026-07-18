@@ -181,6 +181,14 @@ def app_layout():
     formatted_time = now_eastern.strftime("%B %d, %Y — %I:%M %p %Z")
     return render_template("layout.html", current_time=formatted_time)
 # %%
+#setting for local testing and setting for deployment in render 
+# Render automatically sets an environment variable named "RENDER" to "true"
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    if os.environ.get("RENDER"):
+        # Production (Render) settings
+        port = int(os.environ.get("PORT", 5000))
+        app.run(host="0.0.0.0", port=port)
+    else:
+        # Local development settings
+        app.run(debug=True, port=5000)
 # %%
