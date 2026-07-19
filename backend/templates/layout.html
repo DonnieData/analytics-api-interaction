@@ -5,77 +5,303 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>API interactions</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased">
 
-    <div class="max-w-5xl mx-auto px-4 py-10">
-        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 mb-8 gap-4">
+    <div class="max-w-5xl mx-auto px-4 py-10 space-y-10">
+        <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 gap-4">
             <div>
                 <h1 class="text-3xl font-extrabold tracking-tight text-white">API interactions</h1>
                 <p class="text-slate-400 mt-1">Live data feed from Neon Serverless PostgreSQL instance.</p>
+                <div class="mt-2 flex items-center gap-2 text-xs font-mono text-slate-500">
+                    <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>System Initialization: <span class="text-blue-400">{{ current_time }}</span></span>
+                </div>
             </div>
-            
-            <button id="refresh-btn" onclick="fetchMarkets()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 disabled:opacity-50">
-                <span id="btn-icon"></span>
-                <span id="btn-text">Refresh Data</span>
-            </button>
         </header>
 
-        <main class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
-            <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
-                <span>GET /api/v1/markets/test-ten</span>
-                <span id="status-badge" class="text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Status: Ready</span>
-            </div>
+        <main data-url="/api/v1/markets/test-ten" id="container-raw" class="space-y-6 dynamic-container">
             
-        
-            <pre id="json-display" class="p-6 text-xs text-slate-450 font-mono overflow-y-auto max-h-[380px] whitespace-pre-wrap select-all flex-1">// Workspace Idle. Click 'Refresh Data Blocks' to query the live API endpoint.</pre>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Raw Data Preview</h2>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">GET /api/v1/markets/test-ten</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
+                    <button onclick="updateTableComponent(document.getElementById('container-raw'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
+                        Refresh Raw
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
+                    <table class="data-table w-full text-left border-collapse text-xs hidden">
+                        <head class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></head>
+                        <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
+                    </table>
+                    <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
+                        Workspace Idle. Click 'Refresh Workspace Data' or 'Refresh Raw' to run pipeline query.
+                    </div>
+                </div>
+            </div>
         </main>
+
+        <section data-url="/api/v1/markets/summary-by-county" id="container-summary" class="space-y-6 dynamic-container">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Summary Analytics</h2>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">Metrics compiled by target county distribution layer</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
+                    <button onclick="updateTableComponent(document.getElementById('container-summary'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
+                        Refresh Summary Analytics
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
+                    <span>VISUALIZATION (Top 15 Counties)</span>
+                </div>
+                <div class="p-6">
+                    <div id="plotly-chart" class="w-full min-h-[350px]"></div>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
+                    <span>DATA MATRIX (Full Records Summary)</span>
+                </div>
+                <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
+                    <table class="data-table w-full text-left border-collapse text-xs hidden">
+                        <head class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></head>
+                        <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
+                    </table>
+                    <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
+                        Workspace Idle. Click 'Refresh Workspace Data' or 'Refresh Summary Analytics' to compile database metrics.
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section data-url="/api/v1/markets/market-geo-plot" id="container-map" class="space-y-6 dynamic-container">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
+                <div>
+                    <h2 class="text-xl font-bold text-white tracking-tight">Geographic Mapping</h2>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">Spatial coordinates and active operation parameters</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
+                    <button onclick="updateTableComponent(document.getElementById('container-map'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
+                        Refresh Geographic Map
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
+                <div class="flex items-center justify-between px-4 py-3 bg-slate-900/50 border-b border-slate-800 text-xs text-slate-500 font-mono">
+                    <span>GEOSPATIAL SCATTER MATRIX</span>
+                </div>
+                <div class="p-6">
+                    <div id="plotly-map" class="w-full min-h-[450px]">
+                        <div class="p-24 text-center text-slate-500 italic font-mono">
+                            Map Engine Offline. Run pipeline queries to construct coordinate tiles.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script>
-        async function fetchMarkets() {
-            const display = document.getElementById('json-display');
-            const btnText = document.getElementById('btn-text');
-            const btnIcon = document.getElementById('btn-icon');
-            const btn = document.getElementById('refresh-btn');
-            const statusBadge = document.getElementById('status-badge');
+        // CHART PLOTTING ENGINE (Completely untouched to preserve working state)
+        function renderPlotlyChart(records) {
+            const chartDiv = document.getElementById('plotly-chart');
+            if (!records || records.length === 0) {
+                chartDiv.innerHTML = `<div class="text-center text-amber-500 font-mono p-12">// No metrics found to plot.</div>`;
+                return;
+            }
 
-            // 1. Enter Loading State
-            display.textContent = "// Querying API routing endpoints and waking Neon connection pool...";
-            display.classList.add('text-slate-500');
-            statusBadge.textContent = "Status: Fetching...";
-            statusBadge.className = "text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded";
-            btnText.textContent = "Fetching...";
-            btn.disabled = true;
+            const topFifteenRecords = records.slice(0, 15);
+            const counties = topFifteenRecords.map(r => r.county || r.County || 'Unknown');
+            const marketCounts = topFifteenRecords.map(r => r.market_count || r.Market_Count || r.count || 0);
+
+            const data = [{
+                x: counties,
+                y: marketCounts,
+                type: 'bar'
+            }];
+
+            chartDiv.innerHTML = '';
+            Plotly.newPlot('plotly-chart', data);
+        }
+
+        // GEOGRAPHIC TILE MAP PLOTTING ENGINE (Corrected for legacy compatibility with Plotly.js v2.x)
+        function renderPlotlyTileMap(records) {
+            const mapDiv = document.getElementById('plotly-map');
+            if (!records || records.length === 0) {
+                mapDiv.innerHTML = `<div class="text-center text-amber-500 font-mono p-12">// No coordinate records found.</div>`;
+                return;
+            }
+
+            const latitudes = records.map(r => r.lat !== undefined ? r.lat : r.latitude);
+            const longitudes = records.map(r => r.lon !== undefined ? r.lon : r.longitude);
+            const hoverDescriptions = records.map(r => `<b>${r.name || 'Location'}</b><br>⏱️ Hours: ${r.hours || 'N/A'}`);
+
+            const data = [{
+                type: "scattermapbox", 
+                mode: "markers",
+                lon: longitudes,
+                lat: latitudes,
+                marker: { 
+                    size: 9, 
+                    color: '#2563eb', 
+                    opacity: 0.85
+                },
+                text: hoverDescriptions,
+                hoverinfo: "text"
+            }];
+
+            const layout = {
+                mapbox: { 
+                    style: "open-street-map", 
+                    zoom: 6.5, 
+                    center: { lat: 42.8, lon: -75.5 } 
+                },
+                showlegend: false,
+                margin: { r: 0, t: 0, b: 0, l: 0 },
+                paper_bgcolor: 'rgba(0,0,0,0)',
+                plot_bgcolor: 'rgba(0,0,0,0)'
+            };
+
+            const config = {
+                responsive: true,
+                displayModeBar: false 
+            };
+
+            mapDiv.innerHTML = '';
+            Plotly.newPlot('plotly-map', data, layout, config);
+        }
+
+        async function updateTableComponent(container) {
+            const url = container.getAttribute('data-url');
+            const badge = container.querySelector('.status-badge');
+            
+            const placeholder = container.querySelector('.table-placeholder');
+            const table = container.querySelector('.data-table');
+            const thead = container.querySelector('.table-head');
+            const tbody = container.querySelector('.table-body');
+
+            if (badge) {
+                badge.textContent = "Fetching...";
+                badge.className = "status-badge text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded text-xs font-mono";
+            }
+            
+            if (placeholder && table) {
+                table.classList.add('hidden');
+                placeholder.classList.remove('hidden');
+                placeholder.className = "table-placeholder p-12 text-center text-slate-500 font-mono animate-pulse";
+                placeholder.innerHTML = `// Running data pipeline stream for target route...`;
+            }
+
+            if (container.id === 'container-map') {
+                document.getElementById('plotly-map').innerHTML = `
+                    <div class="p-24 text-center text-amber-400 font-mono animate-pulse">
+                        // Assembling spatial geometry tiles...
+                    </div>`;
+            }
 
             try {
-                // 2. Fetch data directly from your backend route
-                const response = await fetch('/api/v1/markets/test-ten');
-                
-                if (!response.ok) throw new Error(`HTTP Error Status: ${response.status}`);
-                
-                const data = await response.json();
+                const response = await fetch(url);
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const records = await response.json();
 
-                // 3. Render Formatted Output Data on Success
-                display.classList.remove('text-slate-500');
-                display.textContent = JSON.stringify(data, null, 4);
-                statusBadge.textContent = "Status: 200 OK";
-                statusBadge.className = "text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded";
-            } catch (error) {
-                // 4. Handle Operational Failures Gracefully
-                display.classList.add('text-rose-400');
-                display.textContent = `// Operational Failure Encountered:\\n// ${error.message}\\n\\n// The database connection likely timed out. Click 'Refresh Data' to re-ping the pool.`;
-                statusBadge.textContent = "Status: Error";
-                statusBadge.className = "text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded";
-            } finally {
-                // 5. Reset UI Elements
-                btnText.textContent = "Refresh Data";
-                btn.disabled = false;
+                if (thead && tbody && placeholder && table) {
+                    thead.innerHTML = '';
+                    tbody.innerHTML = '';
+
+                    if (!records || records.length === 0) {
+                        placeholder.className = "table-placeholder p-12 text-center text-amber-400 font-mono";
+                        placeholder.innerHTML = "// Target data returned completely empty.";
+                        return;
+                    }
+
+                    const cols = Object.keys(records[0]);
+                    const trHead = document.createElement('tr');
+                    cols.forEach(c => {
+                        const th = document.createElement('th');
+                        th.className = "p-4 font-bold border-b border-slate-800";
+                        th.textContent = c.replace(/_/g, ' ');
+                        trHead.appendChild(th);
+                    });
+                    thead.appendChild(trHead);
+
+                    records.forEach(row => {
+                        const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-900/40 transition-colors whitespace-nowrap";
+                        cols.forEach(c => {
+                            const td = document.createElement('td');
+                            td.className = "p-4 border-b border-slate-900 max-w-[300px] truncate";
+                            td.textContent = (row[c] !== null && row[c] !== undefined) ? row[c] : '—';
+                            tr.appendChild(td);
+                        });
+                        tbody.appendChild(tr);
+                    });
+
+                    placeholder.classList.add('hidden');
+                    table.classList.remove('hidden');
+                }
+
+                if (container.id === 'container-summary') {
+                    renderPlotlyChart(records);
+                } else if (container.id === 'container-map') {
+                    renderPlotlyTileMap(records);
+                }
+
+                if (badge) {
+                    badge.textContent = "Status: 200 OK";
+                    badge.className = "status-badge text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded text-xs font-mono";
+                }
+
+            } catch (err) {
+                if (placeholder) {
+                    placeholder.className = "table-placeholder p-12 text-center text-rose-400 font-mono";
+                    placeholder.innerHTML = `// Stream failure: ${err.message}`;
+                }
+                if (container.id === 'container-map') {
+                    document.getElementById('plotly-map').innerHTML = `
+                        <div class="p-24 text-center text-rose-400 font-mono">
+                            // Spatial Stream failure: ${err.message}
+                        </div>`;
+                }
+                if (badge) {
+                    badge.textContent = "Status: Error";
+                    badge.className = "status-badge text-rose-400 bg-rose-500/10 px-2 py-0.5 rounded text-xs font-mono";
+                }
             }
         }
 
-        // Fire request on load instantly when DOM mounts
-       
+        async function refreshWorkspaceData() {
+            const btn = document.getElementById('refresh-btn');
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "Processing Engines...";
+            }
+
+            const containers = document.querySelectorAll('.dynamic-container');
+            await Promise.all(Array.from(containers).map(c => updateTableComponent(c)));
+
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "Refresh Workspace Data";
+            }
+        }
     </script>
 </body>
 </html>

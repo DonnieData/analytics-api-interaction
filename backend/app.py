@@ -141,8 +141,34 @@ def get_county_summary_sql():
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
+@app.route("/api/v1/markets/market-geo-plot", methods=["GET"])
+def get_geo_scatter():
+    try:
+        results = db.session.query(
+            FarmersMarket.market_name,
+            FarmersMarket.operation_hours,
+            FarmersMarket.latitude,
+            FarmersMarket.longitude
+            ).filter(FarmersMarket.latitude.isnot(None), FarmersMarket.longitude.isnot(None)).all()
+
+        payload = [
+            {
+                "name": i.market_name,
+                "hours": i.operation_hours if i.operation_hours else "Hours not listed",
+                "lat": float(i.latitude),
+                "lon": float(i.longitude)
+            }
+            for i in results
+            ]
+        
+        return jsonify(payload)
+    
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 
+#---------------------------------------------------
+#Layout / UI ENTRY ROUTE 
 
 #route to display front end which will serve ui to interact with other api endpoints
 @app.route("/layout", methods=["GET"])
@@ -153,8 +179,16 @@ def app_layout():
     eastern_tz = ZoneInfo("America/New_York")
     now_eastern = datetime.now(eastern_tz)
     formatted_time = now_eastern.strftime("%B %d, %Y — %I:%M %p %Z")
-    return render_template("layout2.html", current_time=formatted_time)
+    return render_template("layout.html", current_time=formatted_time)
 # %%
+#setting for local testing and setting for deployment in render 
+# Render automatically sets an environment variable named "RENDER" to "true"
 if __name__ == "__main__":
-    app.run(debug=True, port=5000)
+    if os.environ.get("RENDER"):
+        # Production (Render) settings
+        port = int(os.environ.get("PORT", 5000))
+        app.run(host="0.0.0.0", port=port)
+    else:
+        # Local development settings
+        app.run(debug=True, port=5000)
 # %%
