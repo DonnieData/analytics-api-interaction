@@ -19,9 +19,6 @@
                     <span>System Initialization: <span class="text-blue-400">{{ current_time }}</span></span>
                 </div>
             </div>
-            <button id="refresh-btn" onclick="refreshWorkspaceData()" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 disabled:opacity-50">
-                <span id="btn-text">Refresh Workspace Data</span>
-            </button>
         </header>
 
         <main data-url="/api/v1/markets/test-ten" id="container-raw" class="space-y-6 dynamic-container">
@@ -42,7 +39,7 @@
             <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
                 <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
                     <table class="data-table w-full text-left border-collapse text-xs hidden">
-                        <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
+                        <head class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></head>
                         <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
                     </table>
                     <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
@@ -82,7 +79,7 @@
                 </div>
                 <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
                     <table class="data-table w-full text-left border-collapse text-xs hidden">
-                        <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
+                        <head class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></head>
                         <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
                     </table>
                     <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
@@ -153,19 +150,18 @@
                 return;
             }
 
-            // Standardize potential coordinate field name formats (lat/lon vs latitude/longitude)
             const latitudes = records.map(r => r.lat !== undefined ? r.lat : r.latitude);
             const longitudes = records.map(r => r.lon !== undefined ? r.lon : r.longitude);
             const hoverDescriptions = records.map(r => `<b>${r.name || 'Location'}</b><br>⏱️ Hours: ${r.hours || 'N/A'}`);
 
             const data = [{
-                type: "scattermapbox", // Fix: mapbox legacy naming standard
+                type: "scattermapbox", 
                 mode: "markers",
                 lon: longitudes,
                 lat: latitudes,
                 marker: { 
                     size: 9, 
-                    color: '#2563eb', // Matches your operational blue aesthetic
+                    color: '#2563eb', 
                     opacity: 0.85
                 },
                 text: hoverDescriptions,
@@ -173,10 +169,10 @@
             }];
 
             const layout = {
-                mapbox: { // Fix: mapbox legacy configuration structure
-                    style: "open-street-map", // Fix: Fully open source style that loads instantly without a Mapbox Token
+                mapbox: { 
+                    style: "open-street-map", 
                     zoom: 6.5, 
-                    center: { lat: 42.8, lon: -75.5 } // Focused around New York region coordinates
+                    center: { lat: 42.8, lon: -75.5 } 
                 },
                 showlegend: false,
                 margin: { r: 0, t: 0, b: 0, l: 0 },
@@ -186,7 +182,7 @@
 
             const config = {
                 responsive: true,
-                displayModeBar: false // Keeps visual aesthetic clean and integrated
+                displayModeBar: false 
             };
 
             mapDiv.innerHTML = '';
@@ -214,7 +210,6 @@
                 placeholder.innerHTML = `// Running data pipeline stream for target route...`;
             }
 
-            // Provide visual loading text for the map container canvas itself
             if (container.id === 'container-map') {
                 document.getElementById('plotly-map').innerHTML = `
                     <div class="p-24 text-center text-amber-400 font-mono animate-pulse">
@@ -227,7 +222,6 @@
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const records = await response.json();
 
-                // Build data tables if matching HTML nodes exist inside container elements
                 if (thead && tbody && placeholder && table) {
                     thead.innerHTML = '';
                     tbody.innerHTML = '';
@@ -264,7 +258,6 @@
                     table.classList.remove('hidden');
                 }
 
-                // Divert processing pipelines to charts or maps depending on matching component target ID
                 if (container.id === 'container-summary') {
                     renderPlotlyChart(records);
                 } else if (container.id === 'container-map') {
@@ -296,14 +289,18 @@
 
         async function refreshWorkspaceData() {
             const btn = document.getElementById('refresh-btn');
-            btn.disabled = true;
-            btn.innerText = "Processing Engines...";
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "Processing Engines...";
+            }
 
             const containers = document.querySelectorAll('.dynamic-container');
             await Promise.all(Array.from(containers).map(c => updateTableComponent(c)));
 
-            btn.disabled = false;
-            btn.innerText = "Refresh Workspace Data";
+            if (btn) {
+                btn.disabled = false;
+                btn.innerText = "Refresh Workspace Data";
+            }
         }
     </script>
 </body>
