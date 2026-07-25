@@ -171,7 +171,7 @@ def get_geo_scatter():
 #Layout / UI ENTRY ROUTE 
 
 #route to display front end which will serve ui to interact with other api endpoints
-@app.route("/layout", methods=["GET"])
+@app.route("/", methods=["GET"])
 def app_layout():
     """Serves the interactive frontend"""
 

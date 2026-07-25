@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>API interactions</title>
+    <title>API Interactions </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
 </head>
@@ -12,8 +12,8 @@
     <div class="max-w-5xl mx-auto px-4 py-10 space-y-10">
         <header class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-6 gap-4">
             <div>
-                <h1 class="text-3xl font-extrabold tracking-tight text-white">API interactions</h1>
-                <p class="text-slate-400 mt-1">Live data feed from Neon Serverless PostgreSQL instance.</p>
+                <h1 class="text-3xl font-extrabold tracking-tight text-white">API Interactions - NY Farmers Market Data </h1>
+                <p class="text-slate-400 mt-1">Live data feed from cloud hosted PostgreSQL database instance.</p>
                 <div class="mt-2 flex items-center gap-2 text-xs font-mono text-slate-500">
                     <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>System Initialization: <span class="text-blue-400">{{ current_time }}</span></span>
@@ -24,13 +24,16 @@
         <main data-url="/api/v1/markets/test-ten" id="container-raw" class="space-y-6 dynamic-container">
             
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
-                <div>
-                    <h2 class="text-xl font-bold text-white tracking-tight">Raw Data Preview</h2>
+                <!-- Added min-w-0 to allow text to cleanly wrap over lines -->
+                <div class="min-w-0">
+                    <h2 class="text-xl font-bold text-white tracking-tight">Data Preview</h2>
                     <p class="text-xs text-slate-400 font-mono mt-0.5">GET /api/v1/markets/test-ten</p>
+                    <p class="text-slate-400 mt-1">Queries and returns all columns in the database table to provide a sample of data.</p>
                 </div>
-                <div class="flex items-center gap-4">
+                <!-- Added shrink-0 to lock the shape of the button and status block -->
+                <div class="flex items-center gap-4 shrink-0">
                     <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
-                    <button onclick="updateTableComponent(document.getElementById('container-raw'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
+                    <button onclick="updateTableComponent(document.getElementById('container-raw'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 whitespace-nowrap">
                         Refresh Raw
                     </button>
                 </div>
@@ -39,7 +42,7 @@
             <div class="bg-slate-950 border border-slate-800 rounded-xl shadow-2xl overflow-hidden">
                 <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
                     <table class="data-table w-full text-left border-collapse text-xs hidden">
-                        <head class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></head>
+                        <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
                         <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
                     </table>
                     <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
@@ -52,13 +55,16 @@
         <section data-url="/api/v1/markets/summary-by-county" id="container-summary" class="space-y-6 dynamic-container">
             
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
-                <div>
+                <!-- Added min-w-0 to allow text to cleanly wrap over lines -->
+                <div class="min-w-0">
                     <h2 class="text-xl font-bold text-white tracking-tight">Summary Analytics</h2>
-                    <p class="text-xs text-slate-400 font-mono mt-0.5">Metrics compiled by target county distribution layer</p>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">GET /api/v1/markets/summary-by-county</p>
+                    <p class="text-slate-400 mt-1">Hits endpoint that queries and then summarizes the data by county. Displayed are the top counties by count of Farmers Markets.</p>
                 </div>
-                <div class="flex items-center gap-4">
+                <!-- Added shrink-0 to lock the shape of the button and status block -->
+                <div class="flex items-center gap-4 shrink-0">
                     <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
-                    <button onclick="updateTableComponent(document.getElementById('container-summary'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
+                    <button onclick="updateTableComponent(document.getElementById('container-summary'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 whitespace-nowrap">
                         Refresh Summary Analytics
                     </button>
                 </div>
@@ -79,7 +85,7 @@
                 </div>
                 <div class="overflow-x-auto overflow-y-auto max-h-[350px]">
                     <table class="data-table w-full text-left border-collapse text-xs hidden">
-                        <head class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></head>
+                        <thead class="table-head bg-slate-900 text-slate-400 sticky top-0 font-mono border-b border-slate-800 uppercase tracking-wider whitespace-nowrap"></thead>
                         <tbody class="table-body divide-y divide-slate-800/50 text-slate-300"></tbody>
                     </table>
                     <div class="table-placeholder p-12 text-center text-slate-500 italic font-mono">
@@ -92,13 +98,16 @@
         <section data-url="/api/v1/markets/market-geo-plot" id="container-map" class="space-y-6 dynamic-container">
             
             <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-slate-800 pb-4 gap-4 mt-6">
-                <div>
+                <!-- Added min-w-0 to allow text to cleanly wrap over lines -->
+                <div class="min-w-0">
                     <h2 class="text-xl font-bold text-white tracking-tight">Geographic Mapping</h2>
-                    <p class="text-xs text-slate-400 font-mono mt-0.5">Spatial coordinates and active operation parameters</p>
+                    <p class="text-xs text-slate-400 font-mono mt-0.5">GET /api/v1/markets/market-geo-plot</p>
+                    <p class="text-slate-400 mt-1">Queries and transforms location data, and then plots on interactive map. Hover over plots to get market info and hours of operation.</p>
                 </div>
-                <div class="flex items-center gap-4">
+                <!-- Added shrink-0 to lock the shape of the button and status block -->
+                <div class="flex items-center gap-4 shrink-0">
                     <span class="status-badge text-slate-400 bg-slate-500/10 px-2 py-0.5 rounded text-xs font-mono">Status: Idle</span>
-                    <button onclick="updateTableComponent(document.getElementById('container-map'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95">
+                    <button onclick="updateTableComponent(document.getElementById('container-map'))" class="flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 whitespace-nowrap">
                         Refresh Geographic Map
                     </button>
                 </div>
